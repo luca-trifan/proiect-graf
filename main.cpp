@@ -42,6 +42,24 @@ void citire()
     }
 }
 
+void costMin(int a[100][100])
+{
+    for(int k = 1 ; k <= n ; k ++)
+        for(int i = 1 ; i <= n ; i ++)
+            for(int j = 1 ; j <= n ; j ++)
+                if(a[i][j] > a[i][k] + a[k][j])
+                    a[i][j] = a[i][k] + a[k][j];
+}
+
+void royWarshall(int a[100][100])
+{
+    for(int kk = 1; kk <= n; kk++)
+        for(int i = 1; i <= n; i++)
+            for(int j = 1; j <= n; j++)
+                if(i != j && a[i][j] == 0)
+                    a[i][j] = a[i][kk] * a[kk][j];
+}
+
 void dispatcher()
 {
     int opt;
