@@ -3,6 +3,7 @@
 #include <fstream>
 #include <windows.h>
 #include <conio.h>
+#include <cmath>
 
 #define NC "\e[0m"
 #define RED "\e[0;31m"
@@ -16,39 +17,66 @@
 
 using namespace std;
 
-ifstream fin("harta.in");
-
-int n, m, hartaCost[100][100], hartaDist[100][100];
-
-struct statie
-{
-    int x,y;
-};
+int n, m, hartaCost[100][100], hartaDist[100][100], nrLinii, hartaCoord[100][100], floydCost[100][100], floydDist[100][100];
 
 struct linie
 {
-    int nr;
-    statie traseu[100];
-};
+    int nr, nrStatii;
+    int traseu[100];
+} listLinii[100];
 
 void citire()
 {
+    ifstream fin("harta.in");
     fin>>n;
-    int x,y,cost,dist;
-    while(fin>>x>>y>>cost)
+    int x,y,cost,dist, cont=0;
+    while(fin>>x>>y>>cost>>dist)
     {
         hartaCost[x][y]=cost;
         hartaDist[x][y]=dist;
     }
+    for(int i=0; i*i<n; i++)
+        for(int j=0; j*j<n; j++)
+        {
+            cont++;
+            hartaCoord[i][j]=cont;
+        }
+    ifstream fin2("linii.in");
+    fin2>>nrLinii;
+    for(int i=1; i<=nrLinii; i++)
+    {
+        fin2>>listLinii[i].nr>>listLinii[i].nrStatii;
+        for(int j=1; j<=listLinii[i].nrStatii; j++)
+            fin2>>listLinii[i].traseu[j];
+    }
 }
 
-void costMin(int a[100][100])
+void afisare(int a[100][100], int nr)
+{
+    for(int i=1; i<=n; i++)
+    {
+        for(int j=1; j<n; j++)
+            cout<<a[i][j]<<' ';
+        cout<<endl;
+    }
+    cout<<endl;
+}
+
+void copiaza(int a[100][100], int b[100][100], int nr)
+{
+    for(int i=1; i<=nr; i++)
+        for(int j=1; j<=nr; j++)
+            b[i][j]=a[i][j];
+}
+
+void royFloyd(int a[100][100])
 {
     for(int k = 1 ; k <= n ; k ++)
         for(int i = 1 ; i <= n ; i ++)
             for(int j = 1 ; j <= n ; j ++)
                 if(a[i][j] > a[i][k] + a[k][j])
                     a[i][j] = a[i][k] + a[k][j];
+    afisare(a,n);
 }
 
 void royWarshall(int a[100][100])
@@ -60,12 +88,39 @@ void royWarshall(int a[100][100])
                     a[i][j] = a[i][kk] * a[kk][j];
 }
 
+void inputTraseu()
+{
+    double x,y;
+    int dest, nodStart, xStart, yStart;
+    cout<<"Introduceti coordonatele dvs"<<endl;
+    cin>>x>>y;
+    cout<<"Introduceti numarul nodului de destinatie"<<endl;
+    cin>>dest;
+    xStart = round(x);
+    yStart = round(y);
+    copiaza(hartaCost, floydCost, n);
+    copiaza(hartaDist, floydDist, n);
+    royFloyd(floydCost);
+    royFloyd(floydDist);
+    //afisare(floydCost, n);
+    //afisare(floydDist, n);
+}
+
+/*
 void dispatcher()
 {
     int opt;
     do
     {
         system("CLS");
+        cout << R"(
+    ___            _      _         ___     _                _
+   | _ \  __ _    | |_   | |_      | __|   (_)    _ _     __| |    ___      _ _
+   |  _/ / _` |   |  _|  | ' \     | _|    | |   | ' \   / _` |   / -_)    | '_|
+  _|_|_  \__,_|   _\__|  |_||_|   _|_|_   _|_|_  |_||_|  \__,_|   \___|   _|_|_
+_| """ |_|"""""|_|"""""|_|"""""|_| """ |_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
+"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'
+    )";
         cout<<MAG "1: Cel mai aventuros drum"<<endl;
         cout<<CYN "2: Cel mai lung drum"<<endl;
         cout<<MAG "3: Cel mai scurt drum"<<endl;
@@ -109,11 +164,14 @@ void dispatcher()
     }
     while(opt!=0);
 }
-
+*/
 int main()
 {
     system("Color 0F");
     citire();
-    dispatcher();
+    afisare(hartaCost, n);
+    afisare(hartaDist, n);
+    inputTraseu();
+    //dispatcher();
     return 0;
 }

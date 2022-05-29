@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1653829739 source:c:\users\lucat\documents\github\proiect-graf\main.cpp
+	<stdlib.h>
+	<iostream>
+	<fstream>
+	<windows.h>
+	<conio.h>
+	<cmath>
+
