@@ -19,13 +19,22 @@
 
 using namespace std;
 
-int n, m, hartaCost[100][100], hartaDist[100][100], nrLinii, hartaCoord[100][100], floydCost[100][100], floydDist[100][100];
+int n, m, hartaCost[100][100], hartaDist[100][100], nrLinii, hartaCoord[100][100], floydCost[100][100], floydDist[100][100], traseuCost[100], traseuDist[100];
+
+int dest, nodStart, xStart, yStart;
+
+char hartaSimbol[250][250]= {NULL};
 
 struct linie
 {
     int nr, nrStatii;
     int traseu[100];
 } listLinii[100];
+
+struct nod
+{
+    int x,y;
+};
 
 void citire()
 {
@@ -53,6 +62,93 @@ void citire()
     }
 }
 
+nod gasestePunct(int x)
+{
+    nod punct;
+    for(int i=0; i<n; i++)
+        for(int j=0; j<n; j++)
+            if(hartaCoord[i][j]==x)
+            {
+                punct.x=i+1;
+                punct.y=j+1;
+            }
+    return punct;
+}
+
+void construiesteHartaSimbol()
+{
+    int cont=0, rad=sqrt(n);
+    for(int i=1; i<=n; i+=2)
+        for(int j=1; j<=n; j+=2)
+        {
+            cont++;
+            hartaSimbol[i][j]=static_cast<char>(cont);
+        }
+    for(int i=1; i<=n; i++)
+        for(int j=1; j<=n; j++)
+        {
+            if(hartaDist[i][j]!=0 && hartaDist[j][i]!=0 && i<j)
+            {
+                nod puncti=gasestePunct(i);
+                nod punctj=gasestePunct(j);
+                if(puncti.x%2==0)
+                    puncti.x+=1;
+                if(puncti.y%2==0)
+                    puncti.y+=1;
+                if(punctj.x%2==0)
+                    punctj.x+=1;
+                if(punctj.y%2==0)
+                    punctj.y+=1;
+                if(puncti.x==punctj.x)
+                    hartaSimbol[puncti.x][puncti.y+1]='↔';
+                if(puncti.y==punctj.y)
+                    hartaSimbol[puncti.x+1][puncti.y]='↕';
+                if(puncti.x!=punctj.x && puncti.y>punctj.y)
+                    hartaSimbol[puncti.x+1][puncti.y+1]='⤡';
+                if(puncti.x!=punctj.x && puncti.y<punctj.y)
+                    hartaSimbol[puncti.x-1][puncti.y-1]='⤡';
+            }
+            if(hartaDist[i][j]!=0 && hartaDist[j][i]==0)
+            {
+                nod puncti=gasestePunct(i);
+                nod punctj=gasestePunct(j);
+                if(puncti.x%2==0)
+                    puncti.x+=1;
+                if(puncti.y%2==0)
+                    puncti.y+=1;
+                if(punctj.x%2==0)
+                    punctj.x+=1;
+                if(punctj.y%2==0)
+                    punctj.y+=1;
+                if(puncti.x==punctj.x)
+                {
+                    if(puncti.y<punctj.y)
+                        hartaSimbol[puncti.x][puncti.y+1]='→';
+                    else
+                        hartaSimbol[puncti.x][puncti.y+1]='←';
+                }
+                if(puncti.y==punctj.y)
+                {
+                    if(puncti.x<punctj.x)
+                        hartaSimbol[puncti.x+1][puncti.y]='↓';
+                    else
+                        hartaSimbol[puncti.x+1][puncti.y]='↑';
+                }
+            }
+        }
+}
+
+void displayMap()
+{
+    construiesteHartaSimbol();
+    for(int i=1; i<n*2; i++)
+    {
+        for(int j=1; j<n*2; j++)
+            cout<<hartaSimbol[i][j]<<' ';
+        cout<<endl;
+    }
+}
+
 void afisare(int a[100][100], int nr)
 {
     for(int i=1; i<=n; i++)
@@ -71,22 +167,21 @@ void copiaza(int a[100][100], int b[100][100], int nr)
             b[i][j]=a[i][j];
 }
 
-void reconstituieDrum(int i, int j,int a[100][100])
+void reconstituieDrum(int i, int j, int a[100][100], int b[100], int &lTraseu)
 {
-    int g=0,k=1;
-    while(!g&&k<=n)
+    int ok=0;
+    for(int k=1; k<=n && !ok; k++)
     {
-        if(i!=k&&j!=k)
-            if(a[i][j]=a[i][k]+a[k][j])
-        {
-            reconstituieDrum(i,k,a);
-            reconstituieDrum(k,j,a);
-            g=1;
-        }
-        k++;
+        if(i!=k && j!=k)
+            if(a[i][j]==a[i][k]+a[k][j])
+            {
+                reconstituieDrum(i, k, a, b, lTraseu);
+                reconstituieDrum(k, j, a, b, lTraseu);
+                ok=1;
+            }
     }
-    if(!g)
-        cout<<j<<' ';
+    if(!ok)
+        b[++lTraseu]=j;
 }
 
 void royFloyd(int a[100][100])
@@ -106,19 +201,19 @@ void royFloyd(int a[100][100])
                 a[i][j]=0;
 }
 
-void royWarshall(int a[100][100])
+
+int cautaLinie(int x, int y)
 {
-    for(int kk = 1; kk <= n; kk++)
-        for(int i = 1; i <= n; i++)
-            for(int j = 1; j <= n; j++)
-                if(i != j && a[i][j] == 0)
-                    a[i][j] = a[i][kk] * a[kk][j];
+    for(int i=1; i<=nrLinii; i++)
+        for(int j=1; j<listLinii[i].nrStatii; j++)
+            if(listLinii[i].traseu[j]==x && listLinii[i].traseu[j+1]==y)
+                return listLinii[i].nr;
+    return 0;
 }
 
 void inputTraseu()
 {
     double x,y;
-    int dest, nodStart, xStart, yStart;
     cout<<"Introduceti coordonatele dvs"<<endl;
     cin>>x>>y;
     cout<<"Introduceti numarul nodului de destinatie"<<endl;
@@ -132,12 +227,49 @@ void inputTraseu()
     copiaza(hartaDist, floydDist, n);
     royFloyd(floydCost);
     royFloyd(floydDist);
-    reconstituieDrum(nodStart, dest, floydCost);
     //afisare(floydCost, n);
     //afisare(floydDist, n);
 }
 
-/*
+void celMaiIeftin()
+{
+    int leng=0;
+    reconstituieDrum(nodStart, dest, floydCost, traseuCost, leng);
+    int i=1;
+    cout<<"Traseu propus: ";
+    while(i<leng)
+    {
+        cout<<"Linia "<<cautaLinie(i, i+1);
+        cout<<traseuCost[i]<<' ';
+        while(cautaLinie(i, i+1))
+        {
+            i++;
+            cout<<traseuCost[i]<<' ';
+        }
+        i++;
+    }
+}
+
+void celMaiScurt()
+{
+    int leng=0;
+    reconstituieDrum(nodStart, dest, floydDist, traseuDist, leng);
+    int i=1;
+    cout<<"Traseu propus: ";
+    while(i<leng)
+    {
+        cout<<"Linia "<<cautaLinie(i, i+1);
+        cout<<traseuDist[i]<<' ';
+        while(cautaLinie(i, i+1))
+        {
+            i++;
+            cout<<traseuDist[i]<<' ';
+        }
+        i++;
+    }
+}
+
+
 void dispatcher()
 {
     int opt;
@@ -152,57 +284,42 @@ void dispatcher()
 _| """ |_|"""""|_|"""""|_|"""""|_| """ |_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'
     )";
-        cout<<MAG "1: Cel mai aventuros drum"<<endl;
-        cout<<CYN "2: Cel mai lung drum"<<endl;
-        cout<<MAG "3: Cel mai scurt drum"<<endl;
-        cout<<CYN "4: Cea mai multa energie ramasa"<<endl;
-        cout<<MAG "5: Cea mai putina energie ramasa"<<endl;
-        cout<<CYN "6: Cel mai eficient drum (in cel mai scurt timp)"<<endl;
-        cout<<MAG "7: Cel mai putin eficient drum (in cel mai lung timp)"<<endl;
-        cout<<CYN "10: Afisare matrice"<<endl;
-        cout<<MAG "0: Iesire"<<endl;
+        cout<<endl;
+        cout<<YEL "1: Afisare harta"<<endl;
+        cout<<RED "2: Modificare traseu"<<endl;
+        cout<<BLU "3: Cel mai scurt drum"<<endl;
+        cout<<GRN "4: Cel mai ieftin drum"<<endl;
+        cout<<CYN "0: Iesire"<<endl;
         cout<<NC "Va rog selectati comanda: ";
         cin>>opt;
         if(opt != 0)
         {
-            if(opt==10)
+            switch(opt)
             {
-                for(int i=1; i<=n; ++i)
-                {
-                    for(int j=1; j<=m; ++j)
-                        cout<<a[i][j]<<' ';
-                    cout<<endl;
-                }
-                cout<<endl;
-                for(int i=1; i<=n; ++i)
-                {
-                    for(int j=1; j<=m; ++j)
-                        cout<<sub[i][j]<<' ';
-                    cout<<endl;
-                }
-                cout<<endl;
-            }
-            else
-            {
-                mod=opt;
-                t[i0][j0]=1;
-                traseu(a,t,i0,j0,2);
-                afisSol();
+            case 1:
+                displayMap();
+            case 2:
+                inputTraseu();
+            case 3:
+                celMaiScurt();
+            case 4:
+                celMaiIeftin();
             }
             getch();
         }
-
     }
     while(opt!=0);
 }
-*/
+
 int main()
 {
     system("Color 0F");
+    system("echo off");
+    system("chcp 65001");
+    system("CLS");
     citire();
-    afisare(hartaCost, n);
-    afisare(hartaDist, n);
     inputTraseu();
-    //dispatcher();
+    system("CLS");
+    dispatcher();
     return 0;
 }
