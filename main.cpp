@@ -13,6 +13,8 @@
 #define MAG "\u001b[35m"
 #define CYN "\u001b[36m"
 #define REDB "\e[41m"
+#define INF 99999
+
 
 
 using namespace std;
@@ -69,14 +71,39 @@ void copiaza(int a[100][100], int b[100][100], int nr)
             b[i][j]=a[i][j];
 }
 
+void reconstituieDrum(int i, int j,int a[100][100])
+{
+    int g=0,k=1;
+    while(!g&&k<=n)
+    {
+        if(i!=k&&j!=k)
+            if(a[i][j]=a[i][k]+a[k][j])
+        {
+            reconstituieDrum(i,k,a);
+            reconstituieDrum(k,j,a);
+            g=1;
+        }
+        k++;
+    }
+    if(!g)
+        cout<<j<<' ';
+}
+
 void royFloyd(int a[100][100])
 {
+    for(int i=1; i<=n; i++)
+        for(int j=1; j<=n; j++)
+            if(a[i][j]==0)
+                a[i][j]=INF;
     for(int k = 1 ; k <= n ; k ++)
         for(int i = 1 ; i <= n ; i ++)
             for(int j = 1 ; j <= n ; j ++)
                 if(a[i][j] > a[i][k] + a[k][j])
                     a[i][j] = a[i][k] + a[k][j];
-    afisare(a,n);
+    for(int i=1; i<=n; i++)
+        for(int j=1; j<=n; j++)
+            if(a[i][j]==INF)
+                a[i][j]=0;
 }
 
 void royWarshall(int a[100][100])
@@ -98,10 +125,14 @@ void inputTraseu()
     cin>>dest;
     xStart = round(x);
     yStart = round(y);
+    cout<<xStart<<' '<<yStart<<endl;
+    nodStart = hartaCoord[xStart][yStart];
+    cout<<nodStart<<endl;
     copiaza(hartaCost, floydCost, n);
     copiaza(hartaDist, floydDist, n);
     royFloyd(floydCost);
     royFloyd(floydDist);
+    reconstituieDrum(nodStart, dest, floydCost);
     //afisare(floydCost, n);
     //afisare(floydDist, n);
 }
