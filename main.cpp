@@ -188,17 +188,18 @@ void royFloyd(int a[100][100])
 {
     for(int i=1; i<=n; i++)
         for(int j=1; j<=n; j++)
-            if(a[i][j]==0)
+            if(a[i][j]==0 && i!=j)
                 a[i][j]=INF;
     for(int k = 1 ; k <= n ; k ++)
         for(int i = 1 ; i <= n ; i ++)
             for(int j = 1 ; j <= n ; j ++)
-                if(a[i][j] > a[i][k] + a[k][j])
-                    a[i][j] = a[i][k] + a[k][j];
-    for(int i=1; i<=n; i++)
+                if(i!=k && j!=k && i!=j)
+                    if(a[i][j] > a[i][k] + a[k][j])
+                        a[i][j] = a[i][k] + a[k][j];
+    /*for(int i=1; i<=n; i++)
         for(int j=1; j<=n; j++)
             if(a[i][j]==INF)
-                a[i][j]=0;
+                a[i][j]=0;*/
 }
 
 
@@ -227,14 +228,16 @@ void inputTraseu()
     copiaza(hartaDist, floydDist, n);
     royFloyd(floydCost);
     royFloyd(floydDist);
-    //afisare(floydCost, n);
-    //afisare(floydDist, n);
+    afisare(floydCost, n);
+    afisare(floydDist, n);
+    getch();
 }
 
 void celMaiIeftin()
 {
     int leng=0;
     reconstituieDrum(nodStart, dest, floydCost, traseuCost, leng);
+    cout<<leng<<endl;
     int i=1;
     cout<<"Traseu propus: ";
     while(i<leng)
