@@ -3,7 +3,9 @@
 #include <fstream>
 #include <windows.h>
 #include <conio.h>
+#include <io.h>
 #include <cmath>
+#include <fcntl.h>
 
 #define NC "\e[0m"
 #define RED "\e[0;31m"
@@ -100,13 +102,9 @@ void construiesteHartaSimbol()
                 if(punctj.y%2==0)
                     punctj.y+=1;
                 if(puncti.x==punctj.x)
-                    hartaSimbol[puncti.x][puncti.y+1]='↔';
+                    hartaSimbol[puncti.x][puncti.y+1]='\u2194';
                 if(puncti.y==punctj.y)
-                    hartaSimbol[puncti.x+1][puncti.y]='↕';
-                if(puncti.x!=punctj.x && puncti.y>punctj.y)
-                    hartaSimbol[puncti.x+1][puncti.y+1]='⤡';
-                if(puncti.x!=punctj.x && puncti.y<punctj.y)
-                    hartaSimbol[puncti.x-1][puncti.y-1]='⤡';
+                    hartaSimbol[puncti.x+1][puncti.y]='\u2195';
             }
             if(hartaDist[i][j]!=0 && hartaDist[j][i]==0)
             {
@@ -123,16 +121,16 @@ void construiesteHartaSimbol()
                 if(puncti.x==punctj.x)
                 {
                     if(puncti.y<punctj.y)
-                        hartaSimbol[puncti.x][puncti.y+1]='→';
+                        hartaSimbol[puncti.x][puncti.y+1]='\u2192';
                     else
-                        hartaSimbol[puncti.x][puncti.y+1]='←';
+                        hartaSimbol[puncti.x][puncti.y+1]='\u2190';
                 }
                 if(puncti.y==punctj.y)
                 {
                     if(puncti.x<punctj.x)
-                        hartaSimbol[puncti.x+1][puncti.y]='↓';
+                        hartaSimbol[puncti.x+1][puncti.y]='\u2193';
                     else
-                        hartaSimbol[puncti.x+1][puncti.y]='↑';
+                        hartaSimbol[puncti.x+1][puncti.y]='\u2191';
                 }
             }
         }
@@ -144,8 +142,8 @@ void displayMap()
     for(int i=1; i<n*2; i++)
     {
         for(int j=1; j<n*2; j++)
-            cout<<hartaSimbol[i][j]<<' ';
-        cout<<endl;
+            wcout<<hartaSimbol[i][j]<<' ';
+        wcout<<endl;
     }
 }
 
@@ -228,9 +226,6 @@ void inputTraseu()
     copiaza(hartaDist, floydDist, n);
     royFloyd(floydCost);
     royFloyd(floydDist);
-    afisare(floydCost, n);
-    afisare(floydDist, n);
-    getch();
 }
 
 void celMaiIeftin()
